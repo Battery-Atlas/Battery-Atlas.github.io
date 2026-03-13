@@ -544,6 +544,83 @@
   70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
+
+
+/* ==========================================
+       📱 平板与移动端响应式适配 (Responsive Fixes)
+       ========================================== */
+
+    /* 1. 修复全局缩放导致的 iOS 崩溃问题 */
+    @media (max-width: 1024px) {
+      body { 
+        zoom: 1; /* 移动端必须重置 zoom，否则视口会越界 */
+      }
+    }
+
+    /* 2. 平板端 (iPad) 及以下：优化导航栏 */
+    @media (max-width: 1024px) {
+      .nav-shell { padding: 8px 0; }
+      
+      /* 改为上下堆叠：Logo在最上，菜单在中间，登录在最下 */
+      .nav-bar { 
+        grid-template-columns: 1fr; 
+        gap: 12px; 
+        padding: 0 16px;
+      }
+      
+      /* 缩小巨型 Logo */
+      .logo { justify-content: center; }
+      .logo img { height: 60px; } 
+      .logo-text { font-size: 24px; }
+      
+      /* 核心修复：让菜单栏在手机上可以横向顺滑滑动，不换行！ */
+      .nav-menu-row { 
+        margin-left: 0; 
+        width: 100%; 
+        justify-content: flex-start; 
+        overflow-x: auto !important; 
+        -webkit-overflow-scrolling: touch; /* 开启 iOS 顺滑惯性滚动 */
+        padding-bottom: 5px; 
+        gap: 10px;
+      }
+      /* 隐藏丑陋的横向滚动条，但保留滑动功能 */
+      .nav-menu-row::-webkit-scrollbar { display: none; }
+      
+      .auth-wrap-nav { justify-content: center; width: 100%; }
+    }
+
+    /* 3. 手机端细节微调 */
+    @media (max-width: 768px) {
+      /* 手机上进一步缩小字体和按钮 */
+      .logo img { height: 48px; }
+      .logo-text { font-size: 20px; }
+      .nav-pill { font-size: 15px; padding: 0 12px; height: 40px; }
+      .auth-wrap-nav .btn { font-size: 14px; padding: 0 20px; min-height: 40px; }
+      
+      /* 下拉菜单在手机上居中显示，防止越界 */
+      .dropdown-content { left: 50%; transform: translateX(-50%) translateY(5px); min-width: 180px;}
+      .dropdown:hover .dropdown-content { transform: translateX(-50%) translateY(0); }
+
+      /* 修复底部 Footer 强行三列的问题，改为垂直单列堆叠 */
+      .site-footer { padding: 40px 20px 20px; margin-top: 40px; }
+      .footer-content { 
+        grid-template-columns: 1fr; /* 三列变一列 */
+        gap: 32px; 
+        text-align: center; /* 手机端居中更好看 */
+      }
+      .footer-links-col { 
+        align-items: center; /* 内部元素居中对齐 */
+      }
+    }
+
+    /* 4. 极小屏幕 (iPhone SE 等) */
+    @media (max-width: 480px) {
+      .hero-title { font-size: 2.2rem; }
+      .bento-card { padding: 20px; }
+      .map-regions-container { gap: 15px; }
+      .map-circle { width: 80px; height: 80px; }
+      .map-label { font-size: 14px; }
+    }
   </style>
 </head>
 <body>
@@ -1636,18 +1713,29 @@ function renderHomepage() {
 
 document.getElementById('uploadForm').addEventListener('submit', async e => {
   e.preventDefault();
+  
+  // 检查是否登录 (防止未登录用户在前端强行点按钮)
+  if (!state.isLoggedIn && !state.isAdmin) {
+    document.getElementById('submitMsg').innerHTML = `<div class="error">❌ 请先登录后再提交数据集。</div>`;
+    return;
+  }
+
   const fd = new FormData(e.target);
   const msg = document.getElementById('submitMsg');
   const submitBtn = e.target.querySelector('button[type="submit"]');
   
-  // 基础 Payload（注意增加了一个 action 字段用于后端路由）
+  // 基础 Payload
   const payload = {
     action: "submit_dataset",
+    token: state.adminToken,  // ✅ 核心修改：带上用户的身份证！
     "Dataset Name": String(fd.get('new_name') || '').trim(),
     "Domain": String(fd.get('new_domain') || '').trim(),
-    // ... (保留你原来的其他字段) ...
+    "Category": String(fd.get('new_category') || '').trim(),
+    "Sub-category": String(fd.get('new_subcat') || '').trim(),
+    "Link": String(fd.get('new_link') || '').trim(),
     "Status": "Pending"
   };
+
 
   if (!payload["Dataset Name"] || !payload["Domain"]) {
     msg.innerHTML = `<div class="error">Please fill in all required fields.</div>`;
