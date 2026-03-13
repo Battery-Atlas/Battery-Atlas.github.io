@@ -42,7 +42,6 @@
       background: var(--bg-color);
       background-attachment: fixed;
       min-height: 100vh;
-      zoom: 1.15;
     }
     
     /* 减少两侧留白，让内容铺得更满 */
@@ -504,7 +503,7 @@
     .map-label { font-size: 18px; font-weight: 500; color: #A4D8E8; text-align: center; line-height: 1.2;}
     /* --- 导航栏整体放大 --- */
 /* 调整 Logo 图像大小 */
-.logo img { height: 120px; } 
+.logo img { height: 100px; } 
 
 /* 调整 "BatteryAtlas" 字体大小 */
 .logo-text { font-size: 28px; } 
@@ -547,80 +546,93 @@
 
 
 /* ==========================================
-       📱 平板与移动端响应式适配 (Responsive Fixes)
+       📱 彻底修复：平板与移动端响应式适配
        ========================================== */
 
-    /* 1. 修复全局缩放导致的 iOS 崩溃问题 */
-    @media (max-width: 1024px) {
-      body { 
-        zoom: 1; /* 移动端必须重置 zoom，否则视口会越界 */
-      }
+    /* 1. 只有超大宽屏电脑才使用 zoom，彻底放过 iPad 和手机 */
+    @media (min-width: 1400px) {
+      body { zoom: 1.15; }
     }
 
-    /* 2. 平板端 (iPad) 及以下：优化导航栏 */
-    @media (max-width: 1024px) {
-      .nav-shell { padding: 8px 0; }
+    /* 2. iPad 及小屏笔记本 (1200px 以下) */
+    @media (max-width: 1200px) {
+      /* 修复左右两边白边不对称问题：强制撑满并重置 box-sizing */
+      .app, .nav-shell, .nav-bar {
+        width: 100%;
+        max-width: 100vw;
+        box-sizing: border-box;
+      }
+      .app { padding: 0 20px 2rem; }
       
-      /* 改为上下堆叠：Logo在最上，菜单在中间，登录在最下 */
-      .nav-bar { 
-        grid-template-columns: 1fr; 
-        gap: 12px; 
-        padding: 0 16px;
+      /* 导航栏防止右侧被挤出屏幕 */
+      .nav-bar {
+        grid-template-columns: auto 1fr auto !important; 
+        gap: 15px;
+        padding: 0 20px;
       }
       
-      /* 缩小巨型 Logo */
-      .logo { justify-content: center; }
+      /* 稍微缩小 Logo */
       .logo img { height: 60px; } 
       .logo-text { font-size: 24px; }
       
-      /* 核心修复：让菜单栏在手机上可以横向顺滑滑动，不换行！ */
-      .nav-menu-row { 
-        margin-left: 0; 
-        width: 100%; 
-        justify-content: flex-start; 
+      /* 核心修复：允许中间菜单横向顺滑滚动，且不再向右强行偏移 */
+      .nav-menu-row {
+        margin-left: 0 !important;
+        gap: 10px;
         overflow-x: auto !important; 
         -webkit-overflow-scrolling: touch; /* 开启 iOS 顺滑惯性滚动 */
-        padding-bottom: 5px; 
-        gap: 10px;
       }
-      /* 隐藏丑陋的横向滚动条，但保留滑动功能 */
       .nav-menu-row::-webkit-scrollbar { display: none; }
       
-      .auth-wrap-nav { justify-content: center; width: 100%; }
-    }
-
-    /* 3. 手机端细节微调 */
-    @media (max-width: 768px) {
-      /* 手机上进一步缩小字体和按钮 */
-      .logo img { height: 48px; }
-      .logo-text { font-size: 20px; }
-      .nav-pill { font-size: 15px; padding: 0 12px; height: 40px; }
-      .auth-wrap-nav .btn { font-size: 14px; padding: 0 20px; min-height: 40px; }
+      /* 缩小右侧按钮 */
+      .nav-pill { font-size: 15px; padding: 0 14px; }
+      .auth-wrap-nav .btn { font-size: 15px; padding: 0 18px; min-height: 42px; }
       
-      /* 下拉菜单在手机上居中显示，防止越界 */
-      .dropdown-content { left: 50%; transform: translateX(-50%) translateY(5px); min-width: 180px;}
-      .dropdown:hover .dropdown-content { transform: translateX(-50%) translateY(0); }
+      /* 底部区域 iPad 显示两排 */
+      .footer-content {
+        grid-template-columns: 1fr 1fr; 
+        gap: 30px;
+      }
+    }
 
-      /* 修复底部 Footer 强行三列的问题，改为垂直单列堆叠 */
-      .site-footer { padding: 40px 20px 20px; margin-top: 40px; }
+    /* 3. 手机端完美适配 (768px 以下) */
+    @media (max-width: 768px) {
+      .app { padding: 0 16px 2rem; }
+      
+      /* 导航栏变为上下两行：Logo和按钮在第一行，菜单在第二行 */
+      .nav-bar { 
+        display: flex !important; /* 彻底废除网格，改用 Flex */
+        flex-wrap: wrap; 
+        justify-content: space-between; 
+        align-items: center;
+        padding: 0 16px;
+      }
+      .logo img { height: 45px; }
+      .logo-text { font-size: 20px; }
+      .auth-wrap-nav .btn { font-size: 14px; padding: 0 14px; min-height: 38px; }
+      
+      /* 菜单移动到第二行，填满全宽 */
+      .nav-menu-row {
+        width: 100%;
+        order: 3; 
+        justify-content: flex-start;
+        padding-bottom: 8px;
+        margin-top: 10px;
+        border-top: 1px solid rgba(226, 232, 240, 0.6);
+        padding-top: 12px;
+      }
+      
+      .hero-container { padding: 30px 20px; gap: 20px; }
+      .hero-title { font-size: 3rem; }
+
+      /* 底部区域手机显示单列居中 */
       .footer-content { 
-        grid-template-columns: 1fr; /* 三列变一列 */
-        gap: 32px; 
-        text-align: center; /* 手机端居中更好看 */
+        grid-template-columns: 1fr; 
+        text-align: center; 
       }
-      .footer-links-col { 
-        align-items: center; /* 内部元素居中对齐 */
-      }
+      .footer-links-col { align-items: center; }
     }
 
-    /* 4. 极小屏幕 (iPhone SE 等) */
-    @media (max-width: 480px) {
-      .hero-title { font-size: 2.2rem; }
-      .bento-card { padding: 20px; }
-      .map-regions-container { gap: 15px; }
-      .map-circle { width: 80px; height: 80px; }
-      .map-label { font-size: 14px; }
-    }
   </style>
 </head>
 <body>
