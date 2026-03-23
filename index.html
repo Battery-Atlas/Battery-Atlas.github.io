@@ -728,6 +728,29 @@
     }
 
 
+    async function loadForumData() {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST', // 我们统一用 POST 来路由 action
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: "get_forum" })
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          state.forumPosts = result.data; // 把拉取到的数组存入全局状态
+          
+          // 如果用户当前正停留在论坛页面，拉到数据后自动刷新一下 UI
+          if (state.currentView === 'Community' && state.communityActiveTab === 'forum') {
+            renderCommunity(); 
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load forum posts:", error);
+      }
+    }
+
+
     const root = document.getElementById('pageRoot');
     const navMenu = document.getElementById('navMenu');
     const authWrap = document.getElementById('authWrap');
@@ -1667,21 +1690,51 @@ function renderHomepage() {
         </div>
       `;
 
-      bindTabs('contributeTabs');
+bindTabs('communityTabs');
 
-      // 监听隐藏的 input，更新文件名显示
-      document.getElementById('hiddenFileInput').addEventListener('change', function(e) {
-        const display = document.getElementById('fileNameDisplay');
-        if (this.files && this.files.length > 0) {
-          display.textContent = this.files[0].name;
-          display.style.color = 'var(--brand-dark)';
-          display.style.fontWeight = 'bold';
-        } else {
-          display.textContent = 'No file chosen';
-          display.style.color = '#64748B';
-          display.style.fontWeight = 'normal';
-        }
-      });
+      // 🌟 新增：绑定论坛发帖事件
+      const forumForm = document.getElementById('forumForm');
+      if (forumForm) {
+        forumForm.addEventListener('submit', async e => {
+          e.preventDefault();
+          
+          const title = document.getElementById('forumTitle').value.trim();
+          const content = document.getElementById('forumContent').value.trim();
+          const msg = document.getElementById('forumMsg');
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+
+          msg.innerHTML = `<div class="info">Publishing...</div>`;
+          submitBtn.disabled = true;
+
+          try {
+            const response = await fetch(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ 
+                action: "post_forum", 
+                Title: title,
+                Content: content,
+                Author: state.currentUser.name, // 自动读取当前登录账号的名字
+                Timestamp: new Date().toLocaleString()
+              })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+              msg.innerHTML = `<div class="success">✅ Posted successfully!</div>`;
+              forumForm.reset();
+              // 发帖成功后，重新从后端拉取一次最新数据并刷新页面
+              await loadForumData(); 
+            } else {
+              msg.innerHTML = `<div class="error">❌ Failed to post.</div>`;
+            }
+          } catch (error) {
+            msg.innerHTML = `<div class="error">❌ Network error. Check your connection.</div>`;
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+      }
 
       
       function renderCommunity() {
@@ -2109,6 +2162,7 @@ document.getElementById('syncBtn').onclick = async () => {
 
     rerender(); // 先渲染一个没有数据的空网页外壳
     loadDataFromGoogleSheets(); // 然后去谷歌表格拉取真数据，拉到后再自动刷新一次
+    loadForumData(); // 🌟 新增：网站加载时拉取论坛数据
   </script>
 </body>
 </html>
