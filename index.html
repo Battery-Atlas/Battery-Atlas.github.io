@@ -546,8 +546,8 @@
 
 
 /* ==========================================
-       📱 彻底修复：平板与移动端响应式适配
-       ========================================== */
+        📱 彻底修复：平板与移动端响应式适配
+        ========================================== */
 
     /* 1. 只有超大宽屏电脑才使用 zoom，彻底放过 iPad 和手机 */
     @media (min-width: 1400px) {
@@ -737,7 +737,7 @@
     let isResizeBound = false; // 新增标志位
 
 // === 1. 第一张卡片：原版离子穿梭流 ===
-// === 终极版：双向离子碰撞 + 微型烟花特效 ===
+// === 终极版：双向离子碰撞 + 🌟绚丽烟花特效 ===
 function initParticleAnimation() {
   const canvas = document.getElementById('particleCanvas');
   if (!canvas) return;
@@ -746,7 +746,7 @@ function initParticleAnimation() {
   let height = canvas.height = canvas.offsetHeight;
 
   const particles = [];
-  const sparks = []; // 新增：用于存储烟花火花的数组
+  const sparks = []; // 存储烟花火花的数组
   const particleCount = 40; // 保持清爽的数量
 
   // 1. 初始化主粒子（一半向左，一半向右）
@@ -764,27 +764,45 @@ function initParticleAnimation() {
     });
   }
 
-  // 新增：触发烟花爆炸的函数
-  function createFirework(x, y, color) {
-    const sparkCount = 6 + Math.floor(Math.random() * 5); // 每次产生 6-10 个小火花
+  // === 🌟核心修改：打造绚丽烟花的触发函数 ===
+  function createFirework(x, y) {
+    // 定义一个充满活力的绚丽色彩序列 (高能蓝、青色、金黄核心、瞬时热白)
+    const energyColors = [
+      '56, 189, 248', // Electric Blue (高能蓝，亮眼)
+      '34, 211, 238', // Cyan (青色，清透)
+      '234, 179, 8',   // Amber (金黄，能量核心)
+      '255, 255, 255'  // Hot White (瞬时热白，高能爆点)
+    ];
+
+    // 大幅增加粒子数量，打造爆发感 (25-45个粒子)
+    const sparkCount = 25 + Math.floor(Math.random() * 20); 
+    
     for (let i = 0; i < sparkCount; i++) {
-      const angle = Math.random() * Math.PI * 2; // 360度随机散开
-      const speed = Math.random() * 2 + 1; // 爆炸初速度
+      const angle = Math.random() * Math.PI * 2; // 360度全方位散开
+      // 粒子物理属性：赋予粒子不同的初始速度和生命周期，增加深度的空间感
+      const initialSpeed = Math.random() * 4 + 1.5; // 更广的速度范围 (1.5-5.5)
+      const initialLife = Math.random() * 0.6 + 0.4; // 粒子生命周期不一 (0.4-1.0)
+      const startRadius = Math.random() * 1.5 + 1.2; // 粒子初始大小不一 (1.2-2.7)
+
+      // 动态选择颜色，模拟热白核心向外围过渡
+      const chosenColor = energyColors[Math.floor(Math.random() * energyColors.length)];
+
       sparks.push({
         x: x,
         y: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 1.0, // 初始透明度
-        decay: Math.random() * 0.03 + 0.02, // 消失的速度
-        color: color
+        vx: Math.cos(angle) * initialSpeed,
+        vy: Math.sin(angle) * initialSpeed,
+        life: initialLife, // Varied duration
+        decay: Math.random() * 0.015 + 0.008, // 较慢的衰减速度，让绚丽感持久 (0.008 to 0.023)
+        gravity: 0.03, // 🌟新增：微小的重力影响，粒子会微微下坠，更真实
+        startRadius: startRadius,
+        color: chosenColor // Vibrant color
       });
     }
   }
 
   function draw() {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; 
-    ctx.fillRect(0, 0, width, height);
+ctx.clearRect(0, 0, width, height); // 彻底清空画布，没有任何拖尾
 
     // --- 2. 更新和绘制主粒子 ---
     for (let i = 0; i < particleCount; i++) {
@@ -829,25 +847,28 @@ function initParticleAnimation() {
 
         // 【碰撞爆炸逻辑】距离极近，且移动方向相反，且不在冷却中
         if (dist < (p.radius + p2.radius + 3) && (p.vx * p2.vx < 0) && p.cooldown === 0 && p2.cooldown === 0) {
-          // 1. 在两点中心触发烟花
-          createFirework((p.x + p2.x) / 2, (p.y + p2.y) / 2, '234, 179, 8'); // 用醒目的金黄色(琥珀色)代表能量碰撞
+          // 1. 🌟修改：在两点中心触发绚丽烟花，无需传递单一颜色
+          createFirework((p.x + p2.x) / 2, (p.y + p2.y) / 2); 
           
           // 2. 粒子物理反弹 (交换或反转速度)
           p.vx *= -1;
           p2.vx *= -1;
           
           // 3. 进入碰撞冷却，防止粘连
-          p.cooldown = 30;
-          p2.cooldown = 30;
+          p.cooldown = 40; // 将冷却时间从 30 增加到 40，避免过度拥挤
+          p2.cooldown = 40;
         }
       }
     }
 
-    // --- 4. 更新和绘制烟花粒子 ---
+    // --- 4. 更新和绘制绚丽烟花粒子 ---
     for (let i = sparks.length - 1; i >= 0; i--) {
       let s = sparks[i];
+      // 🌟新增：应用物理属性，vx、vy和重力
       s.x += s.vx;
       s.y += s.vy;
+      s.vy += s.gravity; // 🌟新增：应用微小的下坠重力
+      
       s.life -= s.decay; // 逐渐变透明
 
       if (s.life <= 0) {
@@ -855,17 +876,23 @@ function initParticleAnimation() {
         continue;
       }
 
+      // 🌟新增：粒子大小根据生命周期动态缩小，更像真实火花消失
+      const currentRadius = s.startRadius * (0.8 + 0.2 * s.life); 
+
       ctx.beginPath();
-      ctx.arc(s.x, s.y, 1.2, 0, Math.PI * 2);
+      // ctx.arc(s.x, s.y, 1.2, 0, Math.PI * 2); // 原固定小大小
+      ctx.arc(s.x, s.y, currentRadius, 0, Math.PI * 2); // 🌟动态粒子大小
+
       ctx.fillStyle = `rgba(${s.color}, ${s.life})`;
-      // 让烟花也有发光效果
-      ctx.shadowBlur = 6;
+      
+      // 🌟核心增强：大幅增强烟花的发光效果，使其更绚丽
+      ctx.shadowBlur = 12; // 🌟从 6 增强到 12，发光更强烈，色彩更饱满
       ctx.shadowColor = `rgba(${s.color}, ${s.life})`;
       ctx.fill();
       ctx.shadowBlur = 0;
     }
 
-    // 全局变量，如果你之前改了名字，这里也要对应
+    // 全局变量
     particleFrameId = requestAnimationFrame(draw); 
   }
   
@@ -1728,7 +1755,7 @@ document.getElementById('uploadForm').addEventListener('submit', async e => {
   
   // 检查是否登录 (防止未登录用户在前端强行点按钮)
   if (!state.isLoggedIn && !state.isAdmin) {
-    document.getElementById('submitMsg').innerHTML = `<div class="error">❌ 请先登录后再提交数据集。</div>`;
+    document.getElementById('submitMsg').innerHTML = `<div class="error">❌ Please log in before submitting your dataset.</div>`;
     return;
   }
 
