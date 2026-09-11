@@ -143,6 +143,8 @@
 
     .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .logo img { height: 100px; width: auto; display: block; filter: brightness(0.9); }
+    .logo-divider { width: 1px; height: 38px; margin: 0 4px; background: rgba(100, 116, 139, 0.35); }
+    .logo .logo-femto { height: 65px; width: auto; object-fit: contain; filter: none; }
     
     .logo-text {
       font-family: 'Harrington', 'Georgia', serif;
@@ -580,6 +582,9 @@
     .site-footer { background: #4D7E86; color: #fff; padding: 60px 20px 20px; margin-top: 60px; font-family: var(--nav-font); }
     .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
     .footer-links-col { display: flex; flex-direction: column; gap: 16px; }
+    .footer-brand { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 22px; }
+    .footer-brand-copy { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+    .footer-femto-logo { height: 64px; width: auto; display: block; flex-shrink: 0; object-fit: contain; }
     .footer-links-col a, .footer-links-col span { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 15px; font-weight: 500; cursor: pointer; transition: color 0.3s; }
     .footer-links-col a:hover { color: #fff; }
     .footer-bottom { border-top: 1px solid rgba(255,255,255,0.2); text-align: center; padding-top: 20px; font-size: 14px; color: rgba(255,255,255,0.7); }
@@ -620,6 +625,8 @@
       .app { padding: 0 20px 2rem; }
       .nav-bar { grid-template-columns: auto 1fr auto !important; gap: 15px; padding: 0 20px; }
       .logo img { height: 60px; } 
+      .logo-divider { height: 30px; margin: 0 2px; }
+      .logo .logo-femto { height: 50px; }
       .logo-text { font-size: 24px; }
       .nav-menu-row { margin-left: 0 !important; gap: 10px; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
       .nav-menu-row::-webkit-scrollbar { display: none; }
@@ -631,6 +638,8 @@
       .app { padding: 0 16px 2rem; }
       .nav-bar { display: flex !important; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 0 16px; }
       .logo img { height: 45px; }
+      .logo-divider { height: 24px; margin: 0; }
+      .logo .logo-femto { height: 39px; }
       .logo-text { font-size: 20px; }
       .auth-wrap-nav .btn { font-size: 14px; padding: 0 14px; min-height: 38px; }
       .nav-menu-row { width: 100%; order: 3; justify-content: flex-start; padding-bottom: 8px; margin-top: 10px; border-top: 1px solid rgba(226, 232, 240, 0.6); padding-top: 12px; }
@@ -638,6 +647,9 @@
       .hero-title { font-size: 3rem; }
       .footer-content { grid-template-columns: 1fr; text-align: center; }
       .footer-links-col { align-items: center; }
+      .footer-brand { flex-direction: row; justify-content: center; gap: 12px; }
+      .footer-brand-copy { align-items: flex-start; text-align: left; }
+      .footer-femto-logo { height: 50px; }
     }
 
     .password-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
@@ -858,6 +870,8 @@
       <div class="logo" onclick="goto('Homepage')">
         <img src="https://raw.githubusercontent.com/jeremiah0188/Battery_dataset/main/logo1.png" alt="logo" />
         <span class="logo-text">BatteryAtlas</span>
+        <span class="logo-divider" aria-hidden="true"></span>
+        <img class="logo-femto" src="femto.png" alt="FEMTO-ST Sciences &amp; Technologies" />
       </div>
       <div id="navMenu" class="nav-menu-row"></div>
       <div id="authWrap" class="auth-wrap-nav"></div>
@@ -870,9 +884,12 @@
 
   <footer class="site-footer">
     <div class="footer-content">
-      <div class="footer-links-col">
-        <h2 style="font-family:'Harrington', serif; margin:0; font-size:24px;">BatteryAtlas</h2>
-        <p style="font-size: 14px; opacity: 0.8; line-height: 1.6;">Open Source Certified Data Platform.</p>
+      <div class="footer-links-col footer-brand">
+        <div class="footer-brand-copy">
+          <h2 style="font-family:'Harrington', serif; margin:0; font-size:24px;">BatteryAtlas</h2>
+          <p style="font-size: 14px; opacity: 0.8; line-height: 1.6; margin:0;">Open Source Certified Data Platform.</p>
+        </div>
+        <img class="footer-femto-logo" src="femto.png" alt="FEMTO-ST Sciences &amp; Technologies" />
       </div>
       <div class="footer-links-col">
         <span style="opacity: 0.6; font-size: 13px; text-transform: uppercase; font-weight: 700;">Platform</span>
@@ -2413,9 +2430,9 @@ function initNetworkMap() {
             <p>Submit a request. If our community or admins find relevant open-source data, we'll add it to the platform.</p>
             <form id="requestForm">
               <div class="form-row">
-                <div class="field"><label>Requested Topic / Dataset Name *</label><input type="text" placeholder="e.g. Real-world EV charging profiles"></div>
-                <div class="field"><label>Additional Details</label><textarea placeholder="Specify any required parameters, chemistry, or format..."></textarea></div>
-                <div class="field"><label>Your Email (to notify you if found)</label><input type="email"></div>
+                <div class="field"><label>Requested Topic / Dataset Name *</label><input name="request_topic" type="text" required placeholder="e.g. Real-world EV charging profiles"></div>
+                <div class="field"><label>Additional Details</label><textarea name="request_details" placeholder="Specify any required parameters, chemistry, or format..."></textarea></div>
+                <div class="field"><label>Your Email (to notify you if found)</label><input name="request_email" type="email"></div>
               </div>
               <button class="primary" type="submit">Submit Request</button>
               <div id="requestMsg"></div>
@@ -2516,10 +2533,46 @@ const payload = {
 
       const requestForm = document.getElementById('requestForm');
       if (requestForm) {
-        requestForm.addEventListener('submit', e => {
+        requestForm.addEventListener('submit', async e => {
           e.preventDefault();
-          document.getElementById('requestMsg').innerHTML = `<div class="success">Request submitted successfully! We will keep an eye out for this data.</div>`;
-          e.target.reset();
+          const fd = new FormData(e.target);
+          const msg = document.getElementById('requestMsg');
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          const payload = {
+            action: 'request_dataset',
+            sessionToken: state.sessionToken || '',
+            Topic: String(fd.get('request_topic') || '').trim(),
+            'Additional Details': String(fd.get('request_details') || '').trim(),
+            'Requester Email': String(fd.get('request_email') || '').trim()
+          };
+
+          if (!payload.Topic) {
+            msg.innerHTML = `<div class="error">Please enter the requested topic or dataset name.</div>`;
+            return;
+          }
+
+          submitBtn.disabled = true;
+          msg.innerHTML = `<div class="info">Submitting your request...</div>`;
+
+          try {
+            const response = await fetch(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            if (result.success) {
+              msg.innerHTML = `<div class="success">Request submitted successfully! We will keep an eye out for this data.</div>`;
+              e.target.reset();
+            } else {
+              msg.innerHTML = `<div class="error">Server error: ${escapeHtml(result.message || 'Unable to submit request')}</div>`;
+            }
+          } catch (error) {
+            msg.innerHTML = `<div class="error">Failed to submit. Check your network connection.</div>`;
+          } finally {
+            submitBtn.disabled = false;
+          }
         });
       }
     }
