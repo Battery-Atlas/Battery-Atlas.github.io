@@ -2578,24 +2578,51 @@ const payload = {
     }
 
     async function sendDataToBackend(payload, msg, form, btn) {
+      let result;
+
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
-        const result = await response.json();
-        
-        if (result.success) {
-          msg.innerHTML = `<div class="success">✅ Successfully submitted!</div>`;
-          form.reset();
-          document.getElementById('fileNameDisplay').textContent = 'No file chosen';
-          loadDataFromGoogleSheets();
-        } else {
-          msg.innerHTML = `<div class="error">❌ Server error: ${result.message}</div>`;
+
+        const responseText = await response.text();
+        try {
+          result = JSON.parse(responseText);
+        } catch (parseError) {
+          throw new Error(`Server returned a non-JSON response (HTTP ${response.status}).`);
+        }
+
+        if (!response.ok) {
+          throw new Error(result.message || `HTTP ${response.status}`);
         }
       } catch (error) {
-        msg.innerHTML = `<div class="error">❌ Failed to submit. Check network.</div>`;
+        btn.disabled = false;
+        console.error('Dataset submission request failed:', error);
+        msg.innerHTML = `<div class="error">❌ Submission response failed: ${escapeHtml(error.message || 'Check your network connection.')}</div>`;
+        return;
+      }
+
+      try {
+        if (result && result.success) {
+          if (result.notificationSent === false) {
+            msg.innerHTML = `<div class="info">✅ Dataset saved for moderation, but the administrator email notification could not be sent.</div>`;
+          } else {
+            msg.innerHTML = `<div class="success">✅ Successfully submitted! The administrator has been notified.</div>`;
+          }
+
+          form.reset();
+          const fileNameDisplay = document.getElementById('fileNameDisplay');
+          if (fileNameDisplay) fileNameDisplay.textContent = 'No file chosen';
+          loadDataFromGoogleSheets();
+        } else {
+          const serverMessage = result && (result.message || result.error);
+          msg.innerHTML = `<div class="error">❌ Server error: ${escapeHtml(serverMessage || 'Unknown server response')}</div>`;
+        }
+      } catch (uiError) {
+        console.error('Dataset submission UI update failed:', uiError);
+        msg.innerHTML = `<div class="success">✅ Dataset saved for moderation.</div>`;
       } finally {
         btn.disabled = false;
       }
